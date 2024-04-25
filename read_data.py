@@ -64,38 +64,6 @@ for file in files:
 columns = ["Participant_ID", "BlockType", "Alpha", "Theta", "Rho", "neg_ll", "BIC"]
 all_participants_results = pd.DataFrame(all_participants_results, columns=columns)
 
-# lambdas = list(ParameterGrid({'lambda1': np.linspace(0.01, 1, 10), 'lambda2': np.linspace(0.01, 1, 10)}))
-# best_score = -float('inf')
-# best_params = None
-# best_lambda = None
-
-# for lambda_dict in lambdas:
-#     all_participants_results = []
-            
-#     lambda1 = float(lambda_dict['lambda1'])
-#     lambda2 = float(lambda_dict['lambda2'])
-#     # Process each file
-#     for file in files:
-#         results = process_data(file, lambda1, lambda2)
-#         all_participants_results.extend(results)
-
-#     # Convert results to DataFrame and save
-#     columns = ["Participant_ID", "BlockType", "Alpha", "Theta", "Rho", "neg_ll", "BIC"]
-#     final_results = pd.DataFrame(all_participants_results, columns=columns)
-
-#     _, p_alpha = shapiro(final_results['Alpha'])
-#     _, p_theta = shapiro(final_results['Theta'])
-#     _, p_rho = shapiro(final_results['Rho'])
-
-#     score = p_alpha + p_theta + p_rho
-
-#     if score > best_score:
-#         best_score = score
-#         best_lambda = (lambda1, lambda2)
-#         best_result = final_results
-    
-# print("best_lambda: ", best_lambda, "best_score: ", best_score)
-
 all_participants_results.to_csv("all_participants_results.csv", index=False)
 
 hist("/Users/raimundbuehler/Documents/UNIDOCS/Papers/RALT/Analysis/Python_RL_model_code_gpt/all_participants_results.csv")
