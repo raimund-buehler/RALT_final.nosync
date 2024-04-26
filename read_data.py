@@ -3,8 +3,6 @@ import numpy as np
 import os
 from param_fit import param_fit
 from histograms import hist
-from sklearn.model_selection import ParameterGrid
-from scipy.stats import shapiro
 
 def process_data(file_path, lambda1, lambda2):
     # Read data
@@ -33,37 +31,33 @@ def process_data(file_path, lambda1, lambda2):
         r = np.concatenate(reward_data)
 
         # Call param_fit function
-        res_nll, params, BIC = param_fit(c, r, lambda1, lambda2)
+        res_nll, (alpha_hat_win, theta_hat_win, rho_hat_win, alpha_hat_loss, theta_hat_loss, rho_hat_loss), BIC = param_fit(c, r, lambda1, lambda2)
 
         # Extract participant ID from file name
         participant_id = os.path.basename(file_path).split('.')[0]
 
         # Append results
-        model_fits.append([participant_id, block_type, params[0], params[1], params[2], res_nll, BIC])
+        model_fits.append([participant_id, block_type, alpha_hat_win, theta_hat_win, rho_hat_win, alpha_hat_loss, theta_hat_loss, rho_hat_loss, res_nll, BIC])
 
     return model_fits
 
-# Specify the directory containing the data files
+# Example for running the process_data function
 data_directory = "/Users/raimundbuehler/Documents/UNIDOCS/Papers/RALT/Analysis/Python_RL_model_code_gpt/RL_data"
-
-# List all CSV files in the directory
 files = [os.path.join(data_directory, file) for file in os.listdir(data_directory) if file.endswith('.csv')]
-
 all_participants_results = []
 
-# Elastic Net parameters
-# (Fixed lambda values now automatically optimized)
-lambda1 = 0.1  # L1 regularization strength
-lambda2 = 0.1 # L2 regularization strength
+lambda1 = 0.01  # L1 regularization strength
+lambda2 = 0.01  # L2 regularization strength
 
 for file in files:
     results = process_data(file, lambda1, lambda2)
     all_participants_results.extend(results)
 
 # Convert results to DataFrame and save
-columns = ["Participant_ID", "BlockType", "Alpha", "Theta", "Rho", "neg_ll", "BIC"]
+columns = ["Participant_ID", "BlockType", "Alpha_Win", "Theta_Win", "Rho_Win", "Alpha_Loss", "Theta_Loss", "Rho_Loss", "Neg_LL", "BIC"]
 all_participants_results = pd.DataFrame(all_participants_results, columns=columns)
 
 all_participants_results.to_csv("all_participants_results.csv", index=False)
 
-hist("/Users/raimundbuehler/Documents/UNIDOCS/Papers/RALT/Analysis/Python_RL_model_code_gpt/all_participants_results.csv")
+# Optional: Generate histograms or other visualizations
+hist("all_participants_results.csv")

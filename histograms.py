@@ -10,10 +10,10 @@ def hist(path):
     results_data.head()
 
     # Set up the figure and axes for the histograms
-    fig, axes = plt.subplots(nrows=1, ncols=3, figsize=(18, 6))
+    fig, axes = plt.subplots(nrows=1, ncols=6, figsize=(18, 6))
 
     # Titles for each subplot
-    titles = ['Alpha', 'Theta', 'Rho']
+    titles = ["Alpha_Win", "Theta_Win", "Rho_Win", "Alpha_Loss", "Theta_Loss", "Rho_Loss"]
 
     # Plot histograms
     for ax, column, title in zip(axes, titles, titles):
