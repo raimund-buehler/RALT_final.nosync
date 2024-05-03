@@ -13,9 +13,13 @@ def negll_RescorlaWagner(params_win, params_loss, c, r):
     """
     Q = [0.5] * 2  # Initialize Q values for choices A and B
     T = len(c)
-    choiceProb = np.zeros(T, dtype=float)
+    choiceProb = [] # List that only includes the choice probabilities for non-nan trials
 
     for t in range(T):
+
+        if np.isnan(r[t]) or np.isnan(c[t]):
+            continue
+
         if r[t] == 1:  # Win
             alpha, theta, rho = params_win
         else:  # Loss
@@ -26,11 +30,12 @@ def negll_RescorlaWagner(params_win, params_loss, c, r):
         p = [p0, 1 - p0]
         
         # Compute choice probability for the actual choice
-        choiceProb[t] = p[c[t]]
+        choiceProb.append(p[c[t]])
 
         # Update values
         delta = rho * r[t] - Q[c[t]]
         Q[c[t]] = Q[c[t]] + alpha * delta
-
-    negLL = -np.sum(np.log(choiceProb))
+    
+    epsilon = 1e-8 # small constant for log smoothing
+    negLL = -np.sum(np.log(choiceProb) + epsilon)
     return negLL
