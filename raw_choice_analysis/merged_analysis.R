@@ -39,46 +39,6 @@ data_full %>%
 table(distinct(data_full, participant, .keep_all = TRUE)$Gender)
 
 #### PLOTS####
-#### Learning over Runs####
-
-mean_correct_answers_rate <- data_plot %>%
-  group_by(BlockType) %>%
-  summarise(mean_correct_rate = mean(correct_answers_rate, na.rm = TRUE))
-
-learning_plot <- data_plot %>%
-  ggplot(aes(
-    x = as.integer(run_n) + 1,
-    y = correct_answers_rate,
-    color = med_split
-  )) +
-  geom_line(size = 1.5) +
-  geom_errorbar(
-    aes(
-      ymin = correct_answers_rate - SE_correct_answers_rate,
-      ymax = correct_answers_rate + SE_correct_answers_rate
-    ),
-    size = 1, width = 0.5,
-    alpha = 0.5
-  ) +
-  labs(color = "AQ") +
-  scale_x_continuous(breaks = 1:6) +
-  labs(
-    x = "Run",
-    y = "% Correct",
-    title = "Learning over Runs"
-  ) +
-  theme_classic() +
-  theme(legend.position = "top") +
-  scale_color_manual(values = c("#ff0083", "#49b7fc")) +
-  theme(text = element_text(size = 20)) +
-  ylim(45, 80) +
-  theme(plot.title = element_text(hjust = 0.5)) +
-  facet_wrap(~BlockType) + # Ensure this syntax is correct
-  geom_hline(data = mean_correct_answers_rate, aes(yintercept = mean_correct_rate, color = NULL), linetype = "dashed")
-
-
-learning_plot
-ggsave("svg/learning_plot.svg", dpi = 700)
 
 #### Learning in 3 groups####
 data_plot_ind <-
@@ -128,19 +88,10 @@ learning_3_groups <-
 learning_3_groups
 ggsave("svg/learning_3_groups.svg", learning_3_groups)
 
-data_plot_group_trial <-
-  data_full %>%
-  select(BlockType, AQ_group, trial_n, CorrectAns) %>%
-  group_by(BlockType, AQ_group, trial_n) %>%
-  mutate(
-    "mean_corr" = mean(CorrectAns, na.rm = T),
-    "se" = sd(CorrectAns, na.rm = TRUE) / sqrt(n())
-  ) %>%
-  distinct(BlockType, AQ_group, trial_n, .keep_all = T) %>%
-  # arrange(BlockType, AQ_group, trial_n) %>%
-  ungroup()
-
 #### Learning in 3 groups - over trials####
+
+# grouping variable - med_split (2) or AQ_group (3)
+
 data_plot_group_trial <-
   data_full %>%
   select(BlockType, AQ_group, trial_n, CorrectAns) %>%
@@ -172,35 +123,38 @@ learning_3_groups_trial <-
 
 learning_3_groups_trial
 
-#### Overall Learning####
-data_plot_group_ov <-
+
+#### Learning in 2 groups over trials using med_split ####
+data_plot_med_split_trial <-
   data_full %>%
-  select(AQ_group, run_n, CorrectAns) %>%
-  group_by(AQ_group, run_n) %>%
+  select(BlockType, med_split, trial_n, CorrectAns) %>%
+  group_by(BlockType, med_split, trial_n) %>%
   mutate(
     "mean_corr" = mean(CorrectAns, na.rm = T),
     "se" = sd(CorrectAns, na.rm = TRUE) / sqrt(n())
   ) %>%
-  distinct(AQ_group, .keep_all = T) %>%
-  arrange(AQ_group, run_n) %>%
+  distinct(BlockType, med_split, trial_n, .keep_all = T) %>%
+  arrange(BlockType, med_split, trial_n) %>%
   ungroup()
 
-ggplot(data_plot_group_ov, aes(x = as.integer(run_n) + 1, y = mean_corr, color = AQ_group)) +
-  # geom_line(data = data_plot_ind, aes(group = Sub_ID), stat="smooth", method = "lm", formula = y ~ x,
-  #           size = 0.5,
-  #           linetype ="dashed",
-  #           alpha = 0.5) +
-  geom_line(size = 1.5) +
-  # geom_smooth() +
-  # geom_errorbar(aes(ymin = mean_corr - se,
-  #                   ymax = mean_corr + se),
-  #               size = 1, width = 0.5,
-  #               alpha = 0.5) +
-  geom_ribbon(aes(ymin = mean_corr - se, ymax = mean_corr + se, fill = AQ_group), alpha = 0.1) +
-  scale_x_continuous(breaks = 1:6) +
-  labs(x = "Run", y = "% Correct Answers", color = "AQ Score", fill = "AQ Score") +
-  theme_minimal() +
-  theme(legend.position = "right")
+mean_med_split_Block <-
+  data_full %>%
+  group_by(BlockType, med_split) %>%
+  summarise(mean_overall = mean(CorrectAns, na.rm = T)) %>%
+  ungroup()
+
+learning_2_groups_trial <-
+  ggplot(data_plot_med_split_trial, aes(x = as.integer(trial_n) + 1, y = mean_corr, color = med_split)) +
+  geom_line(size = 1) +
+  geom_smooth(method = "loess", se = T) +
+  geom_hline(data = mean_med_split_Block, aes(yintercept = mean_overall, color = NULL), linetype = "dashed") +
+  facet_grid(med_split ~ BlockType) +
+  geom_ribbon(aes(ymin = mean_corr - se, ymax = mean_corr + se), alpha = 0.1) +
+  labs(x = "Trial", y = "% Correct Answers", color = "AQ Score", fill = "AQ Score", title = "Learning over Trials") +
+  theme_classic() +
+  theme(legend.position = "top")
+
+learning_2_groups_trial
 
 
 #### Histogram####
@@ -234,16 +188,15 @@ data_full$AQ_score <- scale(data_full$AQ_score, scale = F)
 
 AQ_full <- glmer(
   data = data_full,
-  CorrectAns ~ scale(AQ_score) *
+  CorrectAns ~ AQ_score *
     BlockType + run_n +
-    (1 + run_n | participant),
+    (1 + run_n + BlockType | participant),
   family = "binomial",
   control = glmerControl(optimizer = "bobyqa")
 )
 
 summary(AQ_full)
 
-library(car)
 Anova(AQ_full)
 
 ##### Model Comparison####
@@ -355,43 +308,6 @@ interact_plot <- interact_plot(AQ_full,
 
 interact_plot
 ggsave("svg/interact_plot.svg")
-
-#### RL parameters####
-# Fit models
-# Alpha (Learning Rate)
-
-data_RL$avg_alpha %>% hist()
-alpha <- lm(
-  data = data_RL,
-  avg_alpha ~ AQ_score * BlockType
-)
-summary(alpha)
-
-plot(
-  data_RL$AQ_score,
-  data_RL$avg_alpha
-)
-abline(alpha, conf)
-
-# Violin Plot for social - nonsocial contrast
-# points & alpha (transparency)
-ggplot(data_RL, aes(x = BlockType, y = avg_alpha, fill = BlockType)) +
-  geom_violin() +
-  stat_summary() +
-  theme_classic() +
-  theme(legend.position = "none")
-
-# Theta (Inverse Temperature)
-theta <- lm(
-  data = data_RL %>%
-    filter(avg_theta != 50),
-  avg_theta ~ AQ_score * BlockType
-)
-summary(theta)
-
-plot(data_RL$AQ_score, data_RL$avg_theta)
-abline(theta)
-
 
 #### ASSUMPTIONS####
 # Distribution of random effects

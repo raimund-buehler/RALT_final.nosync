@@ -36,6 +36,5 @@ def negll_RescorlaWagner(params_win, params_loss, c, r):
         delta = rho * r[t] - Q[c[t]]
         Q[c[t]] = Q[c[t]] + alpha * delta
     
-    epsilon = 1e-8 # small constant for log smoothing
-    negLL = -np.sum(np.log(choiceProb) + epsilon)
+    negLL = -np.sum(np.log(choiceProb))
     return negLL
