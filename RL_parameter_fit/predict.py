@@ -65,6 +65,8 @@ def process_data(file_path, df_p):
             #read parameters from the file/parameter analysis/merged_df_final.csv and block type in current loop
             params_win = df_p[(df_p['participant_x'] == participant_id) & (df_p['BlockType'] == block_type)][['Alpha_Win', 'Theta_Win', 'Rho_Win']].values[0]
             params_loss = df_p[(df_p['participant_x'] == participant_id) & (df_p['BlockType'] == block_type)][['Alpha_Loss', 'Theta_Loss', 'Rho_Loss']].values[0]
+
+
         except IndexError:
             continue
 
@@ -80,6 +82,9 @@ def process_data(file_path, df_p):
 
             #check if predicted choice is equal to high_prob_choice
             stim_data["CorrectPrediction"] = np.where(stim_data["PredictedChoice"] == stim_data["high_prob_choice"], 1, 0)
+
+            # add AQ_score to stim_data from df_p (distinct for each participant)
+            stim_data["AQ_score"] = df_p[df_p['participant_x'] == participant_id]['AQ_score'].values[0]
 
             # Append stim_data to all_stims
             all_stims = pd.concat([all_stims, stim_data])
@@ -112,6 +117,9 @@ for file in files:
 
     # Save all_choices to a new CSV file
     all_choices.to_csv('RL_parameter_fit/all_choices.csv', index=False)
+
+    # save to plot_choice_vs_predict/all_choices.csv
+    all_choices.to_csv('plot_choice_vs_predict/all_choices.csv', index=False)
 
 print("All data processed successfully.")
 
