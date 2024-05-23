@@ -102,7 +102,8 @@ ggplot(data = all_choices_means_overall, aes(x = as.factor(TrialNumber), y = par
   ) +
   theme_minimal() +
   theme(legend.position = "bottom") +
-  scale_linetype_manual(name = "Type", values = c("Observed" = "solid", "Predicted" = "dashed"))
+  scale_linetype_manual(name = "Type", values = c("Observed" = "solid", "Predicted" = "dashed")) +
+  facet_grid(cols = vars(BlockType))
 
 
 #### Plot by AQ group####
@@ -133,9 +134,9 @@ all_choices_means_blocks_AQ <- all_choices %>%
 # facet wrap by AQ_group
 ggplot(data = all_choices_means_AQ_overall, aes(x = as.factor(TrialNumber), y = part_mean, color = BlockType)) +
   geom_line(aes(y = part_mean_ov, group = BlockType, linetype = "Observed", color = BlockType)) +
-  # geom_line(aes(y = pred_mean_ov, group = BlockType, linetype = "Predicted", color = BlockType)) +
+  geom_line(aes(y = pred_mean_ov, group = BlockType, linetype = "Predicted", color = BlockType)) +
   geom_errorbar(aes(y = part_mean_ov, ymin = part_mean_ov - part_ov_se, ymax = part_mean_ov + part_ov_se, color = BlockType, linetype = "Observed"), width = 0.5) +
-  # geom_errorbar(aes(y = pred_mean_ov, ymin = pred_mean_ov - pred_ov_se, ymax = pred_mean_ov + pred_ov_se, color = BlockType, linetype = "Predicted"), width = 0.5) +
+  geom_errorbar(aes(y = pred_mean_ov, ymin = pred_mean_ov - pred_ov_se, ymax = pred_mean_ov + pred_ov_se, color = BlockType, linetype = "Predicted"), width = 0.5) +
   geom_hline(data = all_choices_means_blocks_AQ, aes(yintercept = part_mean_ov, linetype = "Overall Mean"), color = "darkgray", linetype = "dashed") +
   labs(
     title = "Correct Answers over Trials by AQ group",
@@ -190,3 +191,59 @@ ggplot(data = all_choices_means_Med_overall, aes(x = as.factor(TrialNumber), y =
   theme(legend.position = "bottom") +
   scale_linetype_manual(name = "Type", values = c("Observed" = "solid", "Predicted" = "dashed")) +
   facet_grid(rows = vars(Med_Split))
+
+
+#### Plot fitted vs recovered parameters####
+# read recovered parameters
+params_recovered <- read.csv("parameter analysis/best_params_recovered.csv")
+params_fitted <- read.csv("parameter analysis/merged_df_final.csv")
+
+# rename participant_x to Participant_ID for params_fitted
+params_fitted <- params_fitted %>%
+  rename(Participant_ID = participant_x)
+
+# merge the two dataframes by Participant_ID BlockType with suffix "recovered"
+params_merged <- merge(params_fitted, params_recovered, by = c("Participant_ID", "BlockType"), suffixes = c("", "_recovered"))
+
+colnames(params_merged)
+
+cols_fitted <- c("Alpha_Win", "Theta_Win", "Rho_Win", "Alpha_Loss", "Theta_Loss", "Rho_Loss")
+cols_recovered <- c("Alpha_Win_recovered", "Theta_Win_recovered", "Rho_Win_recovered", "Alpha_Loss_recovered", "Theta_Loss_recovered", "Rho_Loss_recovered")
+
+# create empty list to store plots
+plots <- list()
+
+# for loop for all columns
+for (i in seq_along(cols_fitted)) {
+  p <- ggplot(params_merged, aes(x = !!sym(cols_fitted[i]), y = !!sym(cols_recovered[i]))) +
+    geom_point() +
+    geom_abline(intercept = 0, slope = 1) +
+    labs(
+      title = paste("Fitted vs Recovered", cols_fitted[i]),
+      x = paste("Fitted", cols_fitted[i]),
+      y = paste("Recovered", cols_fitted[i])
+    ) +
+    theme_minimal() +
+    # set x and y limits to 0 to 1, but only for Alpha and Rho
+    if (grepl("Alpha|Rho", cols_fitted[i])) {
+      coord_cartesian(xlim = c(0, 1), ylim = c(0, 1))
+    }
+  plots[[i]] <- p
+}
+
+plots
+
+
+params_merged %>%
+  gather(key = "parameter_fitted", value = "value_fitted", cols_fitted) %>%
+  gather(key = "parameter_recovered", value = "value_recovered", cols_recovered) %>%
+  ggplot(aes(x = value_fitted, y = value_recovered)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1) +
+  facet_wrap(~parameter_fitted, scales = "free") +
+  labs(
+    title = "Fitted vs Recovered Parameters",
+    x = "Fitted",
+    y = "Recovered"
+  ) +
+  theme_minimal()

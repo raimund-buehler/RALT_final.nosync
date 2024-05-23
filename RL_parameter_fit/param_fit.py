@@ -31,6 +31,8 @@ def negll_RescorlaWagner_transformed(params, c, r, lambda1, lambda2):
         # Calculate NLL using the appropriate parameter set for each trial
         total_negll += negll_RescorlaWagner(params_win, params_loss, c_stim, r_stim)
 
+
+
     # Elastic Net regularization for all parameters
     elastic_net_reg = (lambda1 * np.sum(np.abs(params[:6])) + lambda2 * np.sum(params[:6]**2))
 

@@ -28,13 +28,15 @@ def negll_RescorlaWagner(params_win, params_loss, c, r):
         # Compute choice probabilities using softmax
         p0 = np.exp(theta * Q[0]) / (np.exp(theta * Q[0]) + np.exp(theta * Q[1]))
         p = [p0, 1 - p0]
-        
+
+        choice = c[t].astype(np.int64)
+
         # Compute choice probability for the actual choice
-        choiceProb.append(p[c[t]])
+        choiceProb.append(p[choice])
 
         # Update values
-        delta = rho * r[t] - Q[c[t]]
-        Q[c[t]] = Q[c[t]] + alpha * delta
+        delta = rho * r[t] - Q[choice]
+        Q[choice] = Q[choice] + alpha * delta
     
     negLL = -np.sum(np.log(choiceProb))
     return negLL

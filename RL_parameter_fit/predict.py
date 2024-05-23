@@ -33,7 +33,7 @@ def predict_choice(params_win, params_loss, c, r):
         p = [p0, 1 - p0]
 
         # Predict the choice with the highest probability
-        predicted_choices.append(np.argmax(p))
+        predicted_choices.append(np.random.choice([0, 1], p=p))
 
         # Update values
         delta = rho * r[t] - Q[c[t]]
