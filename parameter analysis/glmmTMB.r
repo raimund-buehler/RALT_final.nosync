@@ -4,10 +4,10 @@ library(emmeans)
 library(DHARMa)
 
 # Load the data
-merged_df <- read_csv("merged_df_final.csv")
+merged_df <- read_csv("parameter analysis/merged_df_final.csv")
 
 # directory to save plots
-plot_dir <- "plots"
+plot_dir <- "parameter analysis/plots"
 
 # set theme for ggplot
 theme_set(theme_classic())
@@ -22,7 +22,7 @@ param_cols <- c("Alpha_Win", "Rho_Win", "Alpha_Loss", "Rho_Loss")
 # WITHOUT interaction
 model_list <- list() # Create an empty list to store the models
 for (param in param_cols) {
-  formula <- as.formula(paste(param, "~ scale(AQ_score) + BlockType + (1 | participant_x)"))
+  formula <- as.formula(paste(param, "~ scale(AQ_score, scale = F) + BlockType + (1 | participant_x)"))
   model <- glmmTMB(formula,
     data = merged_df,
     family = beta_family(link = "logit")

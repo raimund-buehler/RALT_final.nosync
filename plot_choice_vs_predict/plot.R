@@ -45,10 +45,18 @@ histogram <- distinct(all_choices, ParticipantID, .keep_all = TRUE) %>%
     title = "Histogram of AQ scores",
     fill = "AQ Group"
   ) + # Assuming AQ is the fill variable's name
-  scale_fill_discrete(labels = c("Median", "Q1", "Q3")) +
+  scale_fill_discrete(labels = c("Low", "Medium", "High")) +
   theme_minimal()
 
 histogram
+
+
+# skewness and kurtosis for AQ_score
+library(moments)
+skewness(all_choices %>% distinct(ParticipantID, .keep_all = TRUE) %>% pull(AQ_score)) %>% round(2)
+# 0.82
+kurtosis(all_choices %>% distinct(ParticipantID, .keep_all = TRUE) %>% pull(AQ_score)) %>% round(2)
+# 3.62
 
 # Compare block types
 all_choices_blocks <- all_choices %>%
