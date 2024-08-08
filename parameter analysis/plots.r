@@ -1,5 +1,6 @@
 library(tidyverse)
 library(lmerTest)
+library(glmmTMB)
 library(effectsize)
 library(httpgd)
 
@@ -17,7 +18,7 @@ param_cols <- c("Alpha_Win", "Rho_Win", "Theta_Win", "Alpha_Loss", "Rho_Loss", "
 # param_cols <- c("Theta_Win", "Theta_Loss")
 
 # directory to save plots
-plot_dir <- "plots"
+plot_dir <- "./parameter analysis/plots/"
 
 # set theme for ggplot
 theme_set(theme_classic())
@@ -48,8 +49,8 @@ histogram_grid <- merged_df %>%
 
 histogram_grid
 
-# save histogram_grid in plot_dir
-ggsave(file.path(plot_dir, "histogram_grid.png"), histogram_grid)
+# save histogram_grid as svg in plot_dir, square aspect ratio
+ggsave(file.path(plot_dir, "histogram_grid.svg"), histogram_grid, width = 10, height = 10)
 
 # Calculate mean and median for each parameter
 for (param in param_cols) {
@@ -114,15 +115,39 @@ for (param in param_cols) {
     print(test)
 }
 
-# LMER for each parameter vs BlockType
+# betaGLMM for each parameter vs BlockType
+model_list <- list() # Create an empty list to store the models
+param_cols <- c("Alpha_Win", "Rho_Win", "Alpha_Loss", "Rho_Loss")
 for (param in param_cols) {
-    formula <- paste(param, "~ BlockType + (1 | participant_x)")
-    lmer_model <- lmer(formula, data = merged_df)
-    print(paste("LMER for", param))
-    print(summary(lmer_model))
-    # effect size
-    effect_sizes <- standardize_parameters(lmer_model, method = "refit")
-    print(effect_sizes)
+    formula <- as.formula(paste(param, "~ BlockType + (1 | participant_x)"))
+    model <- glmmTMB(formula,
+        data = merged_df,
+        family = beta_family(link = "logit")
+    )
+    model_list[[param]] <- model # Save the model to the list with the parameter name as the key
+    print(paste("################################", param, "################################"))
+    print(summary(model))
+}
+
+model <- model_list[["Rho_Win"]]
+summary(model)
+exp(confint(model)) %>% round(2)
+
+model <- model_list[["Alpha_Win"]]
+summary(model)
+exp(confint(model)) %>% round(2)
+
+# lmer for theta
+model_list <- list() # Create an empty list to store the models
+param_cols <- c("Theta_Win", "Theta_Loss")
+for (param in param_cols) {
+    formula <- as.formula(paste(param, "~ BlockType + (1 | participant_x)"))
+    model <- lmer(formula,
+        data = merged_df
+    )
+    model_list[[param]] <- model # Save the model to the list with the parameter name as the key
+    print(paste("################################", param, "################################"))
+    print(summary(model))
 }
 
 # Plot violin plot for social vs non-social blocks for each parameter
@@ -147,8 +172,8 @@ grid_plot_violin <- merged_df %>%
 
 grid_plot_violin
 
-# Save grid_plot in plot_dir
-ggsave(file.path(plot_dir, "violin_grid.png"), grid_plot_violin)
+# save grid_plot as svg in plot_dir, sqaure aspect ratio
+ggsave(file.path(plot_dir, "violin_grid.svg"), grid_plot_violin, width = 10, height = 10)
 
 # Grid plot for AQ_score vs each parameter
 grid_plot_scatter <- merged_df %>%
@@ -173,6 +198,9 @@ grid_plot_scatter <- merged_df %>%
 
 grid_plot_scatter
 
+# save grid_plot as svg in plot_dir, square aspect ratio
+ggsave(file.path(plot_dir, "scatter_grid.svg"), grid_plot_scatter, width = 10, height = 10)
+
 # Save grid_plot in plot_dir
 ggsave(file.path(plot_dir, "scatter_grid.png"), grid_plot_scatter)
 
@@ -193,6 +221,9 @@ scatter_plot <- merged_df %>%
         legend.position = "top",
         aspect.ratio = 1
     )
+
+# save scatter_plot as svg in plot_dir, square aspect ratio
+ggsave(file.path(plot_dir, "scatter_plot.svg"), scatter_plot, width = 10, height = 10)
 
 # save scatter_plot in plot_dir
 ggsave(file.path(plot_dir, "scatter_plot.png"), scatter_plot)

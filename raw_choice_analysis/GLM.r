@@ -5,7 +5,7 @@ library(emmeans)
 library(interactions)
 
 # Load data
-data_full <- read.csv("plot_choice_vs_predict/all_choices_split.csv")
+data_full <- read.csv("raw_choice_analysis/all_choices_split.csv")
 
 #### MODELS####
 #### GLM####

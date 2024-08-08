@@ -22,7 +22,7 @@ param_cols <- c("Alpha_Win", "Rho_Win", "Alpha_Loss", "Rho_Loss")
 # WITHOUT interaction
 model_list <- list() # Create an empty list to store the models
 for (param in param_cols) {
-  formula <- as.formula(paste(param, "~ scale(AQ_score, scale = F) + BlockType + (1 | participant_x)"))
+  formula <- as.formula(paste(param, "~ AQ_score + BlockType + (1 | participant_x)"))
   model <- glmmTMB(formula,
     data = merged_df,
     family = beta_family(link = "logit")
@@ -45,18 +45,23 @@ print(summary(model))
 
 
 # WITH interaction
-model_list <- list() # Create an empty list to store the models
+model_list_inter <- list() # Create an empty list to store the models
 for (param in param_cols) {
-  formula <- as.formula(paste(param, "~ scale(AQ_score) *
+  formula <- as.formula(paste(param, "~ AQ_score *
   BlockType + (1 | participant_x)"))
   model <- glmmTMB(formula,
     data = merged_df,
     family = beta_family(link = "logit")
   )
-  model_list[[param]] <- model # Save the model to the list with the parameter name as the key
+  model_list_inter[[param]] <- model # Save the model to the list with the parameter name as the key
   print(paste("################################", param, "################################"))
   print(summary(model))
 }
+
+# compare AIC of models with and without interaction for rho_win
+model <- model_list[["Rho_Win"]]
+model_inter <- model_list_inter[["Rho_Win"]]
+anova(model, model_inter)
 
 # emtrends for the effect of for rho_win model
 model <- model_list[["Rho_Win"]]
