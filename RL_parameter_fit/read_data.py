@@ -81,7 +81,7 @@ all_participants_results.to_csv("RL_parameter_fit/all_participants_results.csv",
 best_params_df = pd.DataFrame(list(best_params.values()), columns=columns)
 
 # Save the best_params_df DataFrame to a CSV file
-best_params_df.to_csv("best_params_no_log.csv", index=False)
+best_params_df.to_csv("RL_parameter_fit/best_params.csv", index=False)
 
 # Optional: Generate histograms or other visualizations
 hist("RL_parameter_fit/all_participants_results.csv")
