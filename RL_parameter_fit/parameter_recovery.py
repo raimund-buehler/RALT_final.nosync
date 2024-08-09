@@ -86,7 +86,7 @@ all_participants_results = pd.DataFrame(all_participants_results, columns=column
 best_params_df = pd.DataFrame(list(best_params.values()), columns=columns)
 
 # Save the best_params_df DataFrame to a CSV file
-best_params_df.to_csv("best_params_recovered.csv", index=False)
+best_params_df.to_csv("RL_parmater_fit/best_params_recovered.csv", index=False)
 
 # Optional: Generate histograms or other visualizations
-hist("all_participants_results.csv")
+hist("RL_parmater_fit/all_participants_results.csv")

@@ -6,7 +6,7 @@ import statsmodels.formula.api as smf
 from thefuzz import process, fuzz
 
 #Read and adjust data
-df = pd.read_csv("best_params_20_l.csv").rename(columns={'Participant_ID': 'participant'})
+df = pd.read_csv("RL_parameter_fit/best_params_20_l.csv").rename(columns={'Participant_ID': 'participant'})
 df["participant"] = df["participant"].str.lower()
 df = df.sort_values(by="participant")
 df["participant"].str.lower()

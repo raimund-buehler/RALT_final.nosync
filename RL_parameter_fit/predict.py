@@ -118,8 +118,8 @@ for file in files:
     # Save all_choices to a new CSV file
     all_choices.to_csv('RL_parameter_fit/all_choices.csv', index=False)
 
-    # save to plot_choice_vs_predict/all_choices.csv
-    all_choices.to_csv('plot_choice_vs_predict/all_choices.csv', index=False)
+    # save to raw_choice_analysis/all_choices.csv
+    all_choices.to_csv('raw_choice_analysis/all_choices.csv', index=False)
 
 print("All data processed successfully.")
 

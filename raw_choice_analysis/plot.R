@@ -6,7 +6,7 @@ hgd()
 hgd_browse()
 
 # Load data
-all_choices <- read_csv("plot_choice_vs_predict/all_choices.csv")
+all_choices <- read_csv("raw_choice_analysis/all_choices.csv")
 
 # create AQ group column using ntile() (3 groups for AQ_score, Low, Medium, High)
 all_choices <- all_choices %>%
@@ -28,7 +28,7 @@ all_choices <- all_choices %>%
   ))
 
 # save csv
-write_csv(all_choices, "plot_choice_vs_predict/all_choices_split.csv")
+write_csv(all_choices, "raw_choice_analysis/all_choices_split.csv")
 
 #### Histogram####
 histogram <- distinct(all_choices, ParticipantID, .keep_all = TRUE) %>%

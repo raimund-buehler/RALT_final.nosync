@@ -42,7 +42,7 @@ def process_data(file_path, lambda1, lambda2):
     return model_fits
 
 # Example for running the process_data function
-data_directory = "/Users/raimundbuehler/Documents/UNIDOCS/Papers/RALT/Analysis/Python_RL_model_code_gpt/RL_data"
+data_directory = "RL_parameter_fit/RL_data"
 files = [os.path.join(data_directory, file) for file in os.listdir(data_directory) if file.endswith('.csv')]
 all_participants_results = []
 
@@ -75,7 +75,7 @@ columns = ["Participant_ID", "BlockType", "Alpha_Win", "Theta_Win", "Rho_Win", "
 all_participants_results = pd.DataFrame(all_participants_results, columns=columns)
 
 # Save the all_participants_results DataFrame to a CSV file
-all_participants_results.to_csv("all_participants_results.csv", index=False)
+all_participants_results.to_csv("RL_parameter_fit/all_participants_results.csv", index=False)
 
 # Create a DataFrame with the best parameter values for each participant and block type
 best_params_df = pd.DataFrame(list(best_params.values()), columns=columns)
@@ -84,4 +84,4 @@ best_params_df = pd.DataFrame(list(best_params.values()), columns=columns)
 best_params_df.to_csv("best_params_no_log.csv", index=False)
 
 # Optional: Generate histograms or other visualizations
-hist("all_participants_results.csv")
+hist("RL_parameter_fit/all_participants_results.csv")
